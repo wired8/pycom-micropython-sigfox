@@ -641,6 +641,12 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // Note: these are kept as macros because inline functions sometimes use much
 // more code space than the equivalent macros, depending on the compiler.
 #define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+// bool's are immediates, not real objects, so test for the 2 possible values.
+#define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
+#else
+#define mp_obj_is_bool(o) mp_obj_is_type(o, &mp_type_bool)
+#endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
 #define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
@@ -862,6 +868,15 @@ typedef struct {
     mp_int_t step;
 } mp_bound_slice_t;
 
+// slice
+typedef struct _mp_obj_slice_t {
+    mp_obj_base_t base;
+    mp_obj_t start;
+    mp_obj_t stop;
+    mp_obj_t step;
+} mp_obj_slice_t;
+void mp_obj_slice_indices(mp_obj_t self_in, mp_int_t length, mp_bound_slice_t *result);
+
 void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest);
 #if MICROPY_PY_BUILTINS_SLICE
 bool mp_seq_get_fast_slice_indexes(mp_uint_t len, mp_obj_t slice, mp_bound_slice_t *indexes);
@@ -899,4 +914,4 @@ mp_obj_t mp_seq_extract_slice(size_t len, const mp_obj_t *seq, mp_bound_slice_t 
 #define MP_MAP_SLOT_IS_FILLED mp_map_slot_is_filled
 #define MP_SET_SLOT_IS_FILLED mp_set_slot_is_filled
 
-#endif // MICROPY_INCLUDED_PY_OBJ_H
+#endif // MICROPY_INCLUDED_PY_OBJ_H 

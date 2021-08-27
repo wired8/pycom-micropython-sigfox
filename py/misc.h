@@ -221,3 +221,6 @@ extern mp_uint_t mp_verbose_flag;
 #endif // MICROPY_PY_BUILTINS_FLOAT
 
 #endif // MICROPY_INCLUDED_PY_MISC_H
+
+// Macro from v1.12, just make it a no-op
+#define MP_ERROR_TEXT(x) x

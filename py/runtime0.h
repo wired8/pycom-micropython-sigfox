@@ -114,7 +114,7 @@ typedef enum {
     MP_BINARY_OP_NUM_BYTECODE,
 
     // MP_BINARY_OP_REVERSE_* must follow immediately after MP_BINARY_OP_*
-#if MICROPY_PY_REVERSE_SPECIAL_METHODS
+//#if MICROPY_PY_REVERSE_SPECIAL_METHODS
     MP_BINARY_OP_REVERSE_OR = MP_BINARY_OP_NUM_BYTECODE,
     MP_BINARY_OP_REVERSE_XOR,
     MP_BINARY_OP_REVERSE_AND,
@@ -127,7 +127,7 @@ typedef enum {
     MP_BINARY_OP_REVERSE_TRUE_DIVIDE,
     MP_BINARY_OP_REVERSE_MODULO,
     MP_BINARY_OP_REVERSE_POWER,
-#endif
+//#endif
 
     // This is not emitted by the compiler but is supported by the runtime
     MP_BINARY_OP_DIVMOD
