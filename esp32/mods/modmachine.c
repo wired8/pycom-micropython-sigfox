@@ -1,7 +1,7 @@
 /*
  * This file is derived from the MicroPython project, http://micropython.org/
  *
- * Copyright (c) 2020, Pycom Limited and its licensors.
+ * Copyright (c) 2021, Pycom Limited and its licensors.
  *
  * This software is licensed under the GNU GPL version 3 or any later version,
  * with permitted additional terms. For more information see the Pycom Licence
@@ -121,7 +121,7 @@ typedef struct _machine_obj_t {
 #endif
 
 // Function name is not a typo - undocumented ESP-IDF to get die temperature
-uint8_t temprature_sens_read(); 
+uint8_t temprature_sens_read();
 
 #ifdef PYGATE_ENABLED
 static _sig_func_cb_ptr pygate_signal = NULL;
@@ -642,7 +642,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_UART),                    (mp_obj_t)&mach_uart_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_SPI),                     (mp_obj_t)&mach_spi_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2C),                     (mp_obj_t)&machine_i2c_type },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S),                     (mp_obj_t)&machine_i2s_type },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_I2S),                     (mp_obj_t)(&machine_i2s_type) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_PWM),                     (mp_obj_t)&mach_pwm_timer_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_ADC),                     (mp_obj_t)&pyb_adc_type },
     { MP_OBJ_NEW_QSTR(MP_QSTR_DAC),                     (mp_obj_t)&pyb_dac_type },

@@ -37,26 +37,26 @@ class Event:
 # such as other threads, IRQs or scheduler context. Implementation is a stream
 # that asyncio will poll until a flag is set.
 # Note: Unlike Event, this is self-clearing.
-#try:
-#    import uio
+try:
+    import uio
 
-#    class ThreadSafeFlag(uio.IOBase):
-#        def __init__(self):
-#            self._flag = 0
+    class ThreadSafeFlag(uio.IOBase):
+        def __init__(self):
+            self._flag = 0
 
-#        def ioctl(self, req, flags):
-#            if req == 3:  # MP_STREAM_POLL
-#                return self._flag * flags
-#            return None
+        def ioctl(self, req, flags):
+            if req == 3:  # MP_STREAM_POLL
+                return self._flag * flags
+            return None
 
-#        def set(self):
-#            self._flag = 1
+        def set(self):
+            self._flag = 1
 
-#        async def wait(self):
-#            if not self._flag:
-#                yield core._io_queue.queue_read(self)
-#            self._flag = 0
+        async def wait(self):
+            if not self._flag:
+                yield core._io_queue.queue_read(self)
+            self._flag = 0
 
 
-#except ImportError:
-#    pass
+except ImportError:
+    pass

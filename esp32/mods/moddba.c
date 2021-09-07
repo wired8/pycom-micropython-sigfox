@@ -186,10 +186,10 @@ mp_obj_t dba_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, con
     switch (self->resolution) {
         case RESOLUTION_16_BIT:
         default:
-            self->refampl = 1642;
+            self->refampl = 3276; //1642; //
             break;
         case RESOLUTION_24_BIT:
-            self->refampl = 420426;
+            self->refampl = 838860; //420426;  //
             break;
     }
 
@@ -308,7 +308,8 @@ STATIC mp_obj_t dba_calc(mp_obj_t self_in, mp_obj_t samples_in) {
     //  "period" calculation time reached?
     if (self->running_sample_count >= self->num_samples_total) {
         // yes:  calculate dbA and return result
-        float dba = DBFS_TO_RMS_OFFSET + MIC_REF_SPL_DB + 20 * log10(sqrt(self->sum_sqr / self->running_sample_count) / self->refampl);
+        float leq_rms = sqrt(self->sum_sqr / self->running_sample_count);
+        float dba = DBFS_TO_RMS_OFFSET + MIC_REF_SPL_DB + 20 * log10(leq_rms / self->refampl);
         self->running_sample_count = 0;
         self->sum_sqr = 0;
         return mp_obj_new_float(dba);

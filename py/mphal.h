@@ -80,4 +80,6 @@ mp_uint_t mp_hal_ticks_cpu(void);
 #include "extmod/virtpin.h"
 #endif
 
+#define MP_TASK_COREID (1)
+
 #endif // MICROPY_INCLUDED_PY_MPHAL_H

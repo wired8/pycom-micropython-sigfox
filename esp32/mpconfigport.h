@@ -80,6 +80,7 @@
 #define MICROPY_PY_CMATH                            (1)
 #define MICROPY_PY_IO                               (1)
 #define MICROPY_PY_IO_FILEIO                        (1)
+#define MICROPY_PY_IO_IOBASE                        (1)
 #define MICROPY_PY_STRUCT                           (1)
 #define MICROPY_PY_SYS                              (1)
 #define MICROPY_PY_THREAD                           (1)
@@ -128,6 +129,8 @@
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
 #define MICROPY_KBD_EXCEPTION                       (1)
+#define MICROPY_ENABLE_SCHEDULER                    (1)
+#define MICROPY_SCHEDULER_DEPTH                     (8)
 
 #ifndef BOOTLOADER_BUILD
 #include "freertos/FreeRTOS.h"

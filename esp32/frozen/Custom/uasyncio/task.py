@@ -13,7 +13,6 @@ def ph_meld(h1, h2):
         return h2
     if h2 is None:
         return h1
-
     lt = core.ticks_diff(h1.ph_key, h2.ph_key) < 0
     if lt:
         if h1.ph_child is None:
