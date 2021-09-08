@@ -388,6 +388,45 @@ BOOT_SRC_C = $(addprefix bootloader/,\
 	gpio.c \
 	)
 
+
+# start LittlevGL support
+ifeq ($(MICROPY_PY_LVGL), 1)
+LVGL_DIR = $(TOP)/lib/lv_binding_micropython
+LVGL_DIR_NAME = lvgl
+include $(LVGL_DIR)/lvgl/lvgl.mk
+LVGL_DIR_2 = $(LVGL_DIR)/lvgl
+LVGL_GENERIC_DRV_DIR = $(LVGL_DIR)/driver/generic
+INC += -I$(LVGL_DIR)
+ALL_LVGL_SRC = $(shell find $(LVGL_DIR_2) -type f) $(LVGL_DIR)/lv_conf.h
+LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
+LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
+LVGL_MPY_METADATA = $(BUILD)/lvgl/lv_mpy.json
+QSTR_GLOBAL_DEPENDENCIES += $(LVGL_MPY)
+CFLAGS_MOD += $(LV_CFLAGS)
+
+$(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_DIR)/gen/gen_mpy.py
+	$(ECHO) "LVGL-GEN $@"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CPP) $(LV_CFLAGS) -I $(LVGL_DIR)/pycparser/utils/fake_libc_include $(INC) $(LVGL_DIR_2)/lvgl.h > $(LVGL_PP)
+	$(Q)$(PYTHON) $(LVGL_DIR)/gen/gen_mpy.py -M lvgl -MP lv -MD $(LVGL_MPY_METADATA) -E $(LVGL_PP) $(LVGL_DIR_2)/lvgl.h > $@
+
+APP_LVGL_SRC_C += \
+	$(LVGL_MPY) \
+	lib/lv_binding_micropython/driver/esp32/modlvesp32.c \
+	lib/lv_binding_micropython/driver/esp32/modILI9341.c \
+	lib/lv_binding_micropython/driver/esp32/modxpt2046.c \
+	lib/lv_binding_micropython/driver/esp32/modrtch.c \
+	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_40.c \
+	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_50.c \
+	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_60.c \
+	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_70.c \
+	lib/lv_binding_micropython/myfonts/lv_font_seven_segment_80.c \
+	lib/lv_binding_micropython/myfonts/lv_font_seven_segment_100.c \
+	lib/lv_binding_micropython/myfonts/lv_font_roboto_120.c \
+	$(CSRCS)
+endif
+# end LittlevGL support
+
 SFX_OBJ =
 
 OBJ = $(PY_O)
@@ -439,6 +478,11 @@ OBJ += $(addprefix $(BUILD)/, $(APP_MAIN_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(A
 OBJ += $(addprefix $(BUILD)/, $(APP_MODS_SRC_C:.c=.o) $(APP_STM_SRC_C:.c=.o) $(SRC_MOD:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_LITTLEFS_SRC_C:.c=.o) $(APP_UTIL_SRC_C:.c=.o) $(APP_TELNET_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(APP_FTP_SRC_C:.c=.o) $(APP_CAN_SRC_C:.c=.o))
+
+ifeq ($(MICROPY_PY_LVGL), 1)
+OBJ += $(addprefix $(BUILD)/, $(APP_LVGL_SRC_C:.c=.o))
+endif
+
 ifeq ($(PYGATE_ENABLED), 1)
 $(info Pygate Enabled)
 OBJ += $(addprefix $(BUILD)/, $(APP_SX1308_SRC_C:.c=.o) $(APP_PYGATE_SRC_C:.c=.o))

@@ -32,6 +32,9 @@ PYGATE_ENABLED ?= 0
 # COAP is enabled by default
 MOD_COAP_ENABLED ?= 1
 
+# LVGL enabled
+MICROPY_PY_LVGL ?= 1
+
 # LORA is enabled by default for supported boards
 ifeq ($(BOARD), $(filter $(BOARD), LOPY LOPY4 FIPY))
 MOD_LORA_ENABLED ?= 1
@@ -84,6 +87,8 @@ COPY_IDF_LIB ?= 0
 
 LTE_LOG_BUFF ?= 0
 RGB_LED ?= enable
+
+MICROPY_PY_LVGL = 1
 
 # by default openthread over LoRa is enabled
 OPENTHREAD = off

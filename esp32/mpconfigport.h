@@ -132,6 +132,8 @@
 #define MICROPY_ENABLE_SCHEDULER                    (1)
 #define MICROPY_SCHEDULER_DEPTH                     (8)
 
+
+
 #ifndef BOOTLOADER_BUILD
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -147,6 +149,7 @@
 #define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
 
 #define MICROPY_VFS                                 (1)
+#define MICROPY_PY_LVGL                             (1)
 #define MICROPY_VFS_FAT                             (1)
 
 #define MICROPY_READER_VFS                          (1)
@@ -199,6 +202,11 @@ extern const struct _mp_obj_module_t mp_module_ussl;
 extern const struct _mp_obj_module_t mp_module_uqueue;
 extern const struct _mp_obj_module_t mp_module_dba;
 extern const struct _mp_obj_module_t mp_module_i2stools;
+extern const struct _mp_obj_module_t mp_module_lvgl;
+extern const struct _mp_obj_module_t mp_module_lvesp32;
+extern const struct _mp_obj_module_t mp_module_ILI9341;
+extern const struct _mp_obj_module_t mp_module_xpt2046;
+extern const struct _mp_obj_module_t mp_module_rtch;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_umachine),        (mp_obj_t)&machine_module },      \
@@ -215,7 +223,10 @@ extern const struct _mp_obj_module_t mp_module_i2stools;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uerrno),          (mp_obj_t)&mp_module_uerrno },    \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uqueue),          (mp_obj_t)&mp_module_uqueue },    \
     { MP_OBJ_NEW_QSTR(MP_QSTR_dba),             (mp_obj_t)&mp_module_dba },       \
-	{ MP_OBJ_NEW_QSTR(MP_QSTR_i2stools),        (mp_obj_t)&mp_module_i2stools },  \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_i2stools),        (mp_obj_t)&mp_module_i2stools },  \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl),            (mp_obj_t)&mp_module_lvgl }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32),         (mp_obj_t)&mp_module_lvesp32 }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341),         (mp_obj_t)&mp_module_ILI9341 }, \
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine),         (mp_obj_t)&machine_module },      \
@@ -239,28 +250,47 @@ extern const struct _mp_obj_module_t mp_module_i2stools;
 
 #define MP_STATE_PORT                               MP_STATE_VM
 
+#if MICROPY_PY_LVGL
+#include "lib/lv_binding_micropython/lvgl/src/lv_misc/lv_gc.h"
+#else
+#define LV_ROOTS
+#endif
+
+#if MICROPY_BLUETOOTH_NIMBLE
+struct mp_bluetooth_nimble_root_pointers_t;
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
+#else
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
+#endif
+
+
+#define MICROPY_PORT_ROOT_POINTERS \
+    mp_obj_t machine_config_main;                               \
+	mp_obj_t uart_buf[3];                                       \
+	mp_obj_list_t mp_irq_obj_list;                              \
+	mp_obj_list_t mod_network_nic_list;                         \
+	mp_obj_t mp_os_stream_o;                                    \
+	mp_obj_t mp_os_read[3];                                     \
+	mp_obj_t mp_os_write[3];                                    \
+	mp_obj_t mp_alarm_heap;                                     \
+	mp_obj_t mach_pwm_timer_obj[4];                             \
+	mp_obj_list_t btc_conn_list;                                \
+	mp_obj_list_t bts_srv_list;                                 \
+	mp_obj_list_t bts_attr_list;                                \
+	mp_obj_t coap_ptr;                                          \
+	LV_ROOTS \
+    void *mp_lv_user_data; \
+    const char *readline_hist[8]; \
+    mp_obj_t machine_pin_irq_handler[40]; \
+    struct _machine_timer_obj_t *machine_timer_obj_head;
+    MICROPY_BLUETOOTH_NIMBLE
+
 #include "xtensa/xtruntime.h"                       // for the critical section routines
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()              portENTER_CRITICAL_NESTED()
 #define MICROPY_END_ATOMIC_SECTION(state)           portEXIT_CRITICAL_NESTED(state)
 
 #define MICROPY_EVENT_POLL_HOOK                     mp_hal_delay_ms(1);
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];                               \
-    mp_obj_t machine_config_main;                               \
-    mp_obj_t uart_buf[3];                                       \
-    mp_obj_list_t mp_irq_obj_list;                              \
-    mp_obj_list_t mod_network_nic_list;                         \
-    mp_obj_t mp_os_stream_o;                                    \
-    mp_obj_t mp_os_read[3];                                     \
-    mp_obj_t mp_os_write[3];                                    \
-    mp_obj_t mp_alarm_heap;                                     \
-    mp_obj_t mach_pwm_timer_obj[4];                             \
-    mp_obj_list_t btc_conn_list;                                \
-    mp_obj_list_t bts_srv_list;                                 \
-    mp_obj_list_t bts_attr_list;                                \
-    mp_obj_t coap_ptr;                                          \
 
 // we need to provide a declaration/definition of alloca()
 #include <alloca.h>
