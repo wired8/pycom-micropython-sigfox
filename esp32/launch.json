@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug pycom",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/esp32/build/FIPY/debug/application.elf",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/home/phil/esp/xtensa-esp32-elf/bin/xtensa-esp32-elf-gdb",
+      "logging": {
+        "trace": true,
+        "traceResponse": true,
+        "engineLogging": true
+      }
+    }
+  ]
+}

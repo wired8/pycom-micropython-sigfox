@@ -132,7 +132,7 @@ void app_main(void) {
     esp32_init_chip_info();
 
     // remove all the logs from the IDF
-    esp_log_level_set("*", ESP_LOG_NONE);
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
 
     // Register sys event callback
     ESP_ERROR_CHECK(esp_event_loop_init(app_sys_event_handler, NULL));

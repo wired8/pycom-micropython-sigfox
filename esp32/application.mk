@@ -381,6 +381,15 @@ APP_CAN_SRC_C = $(addprefix can/,\
 	CAN.c \
 	)
 
+APP_LVGL_SRC_C = $(addprefix lvgl/,\
+    lvgl.pp.c \
+    )
+
+APP_DRIVERS_SRC_C = $(addprefix drivers/,\
+	bus/softspi.c \
+	dht/dht.c \
+	)
+
 BOOT_SRC_C = $(addprefix bootloader/,\
 	bootloader.c \
 	bootmgr.c \
@@ -388,15 +397,18 @@ BOOT_SRC_C = $(addprefix bootloader/,\
 	gpio.c \
 	)
 
+FIX = $(addprefix build/FIPY/release/,\
+		lvgl/lv_mpy.c \
+		frozen_mpy.c \
+	)
 
 # start LittlevGL support
 ifeq ($(MICROPY_PY_LVGL), 1)
 LVGL_DIR = $(TOP)/lib/lv_binding_micropython
-LVGL_DIR_NAME = lvgl
 include $(LVGL_DIR)/lvgl/lvgl.mk
 LVGL_DIR_2 = $(LVGL_DIR)/lvgl
 LVGL_GENERIC_DRV_DIR = $(LVGL_DIR)/driver/generic
-INC += -I$(LVGL_DIR)
+APP_INC +=-I$(LVGL_DIR)
 ALL_LVGL_SRC = $(shell find $(LVGL_DIR_2) -type f) $(LVGL_DIR)/lv_conf.h
 LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
@@ -410,12 +422,25 @@ $(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_DIR)/gen/gen_mpy.py
 	$(Q)$(CPP) $(LV_CFLAGS) -I $(LVGL_DIR)/pycparser/utils/fake_libc_include $(INC) $(LVGL_DIR_2)/lvgl.h > $(LVGL_PP)
 	$(Q)$(PYTHON) $(LVGL_DIR)/gen/gen_mpy.py -M lvgl -MP lv -MD $(LVGL_MPY_METADATA) -E $(LVGL_PP) $(LVGL_DIR_2)/lvgl.h > $@
 
-APP_LVGL_SRC_C += \
+#esp-idf generated module
+ESPIDFMOD_SOURCE = $(TOP)/lib/lv_binding_micropython/driver/esp32/espidf.h
+ALL_ESPIDFMOD_SRC = $(shell find $(subst -I,,$(INC_ESPCOMP)) -type f) $(ESPIDFMOD_SOURCE) sdkconfig.h
+ESPIDFMOD_MODULE = $(BUILD)/espidfmod/mp_espidf.c
+ESPIDFMOD_PP = $(BUILD)/espidfmod/mp_espidf.pp.c
+CFLAGS_MOD += $(ESPIDFMOD_CFLAGS) -Wno-deprecated-declarations
+
+$(ESPIDFMOD_MODULE): $(ALL_ESPIDFMOD_SRC) $(LVGL_DIR)/gen/gen_mpy.py
+	$(ECHO) "ESPIDFMOD-GEN $@"
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(CPP) $(ESPIDFMOD_CFLAGS) -DPYCPARSER -I $(LVGL_DIR)/pycparser/utils/fake_libc_include $(INC) $(APP_INC) $(ESPIDFMOD_SOURCE) > $(ESPIDFMOD_PP)
+	$(Q)$(PYTHON) $(LVGL_DIR)/gen/gen_mpy.py -M espidf -E $(ESPIDFMOD_PP) $(ESPIDFMOD_SOURCE) > $@
+
+APP_LIB_SRC_C += \
 	$(LVGL_MPY) \
+	lib/lv_binding_micropython/driver/esp32/espidf.c \
 	lib/lv_binding_micropython/driver/esp32/modlvesp32.c \
 	lib/lv_binding_micropython/driver/esp32/modILI9341.c \
-	lib/lv_binding_micropython/driver/esp32/modxpt2046.c \
-	lib/lv_binding_micropython/driver/esp32/modrtch.c \
+	$(ESPIDFMOD_MODULE) \
 	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_40.c \
 	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_50.c \
 	lib/lv_binding_micropython/myfonts/lv_font_roboto_mono_60.c \
@@ -465,6 +490,7 @@ endif
 
 ifeq ($(BOARD),$(filter $(BOARD), FIPY GPY))
 OBJ += $(addprefix $(BUILD)/, $(APP_LTE_SRC_C:.c=.o) $(APP_MODS_LTE_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(APP_DRIVERS_SRC_C:.c=.o))
 endif
 
 # add OPENTHREAD code only if flag enabled and for LOPY, LOPY4 and FIPY
@@ -478,10 +504,6 @@ OBJ += $(addprefix $(BUILD)/, $(APP_MAIN_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(A
 OBJ += $(addprefix $(BUILD)/, $(APP_MODS_SRC_C:.c=.o) $(APP_STM_SRC_C:.c=.o) $(SRC_MOD:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_LITTLEFS_SRC_C:.c=.o) $(APP_UTIL_SRC_C:.c=.o) $(APP_TELNET_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(APP_FTP_SRC_C:.c=.o) $(APP_CAN_SRC_C:.c=.o))
-
-ifeq ($(MICROPY_PY_LVGL), 1)
-OBJ += $(addprefix $(BUILD)/, $(APP_LVGL_SRC_C:.c=.o))
-endif
 
 ifeq ($(PYGATE_ENABLED), 1)
 $(info Pygate Enabled)
@@ -500,7 +522,7 @@ OBJ += $(BUILD)/pins.o
 BOOT_OBJ = $(addprefix $(BUILD)/, $(BOOT_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(APP_MODS_SRC_C) $(APP_UTIL_SRC_C) $(APP_STM_SRC_C) $(APP_LIB_SRC_C) $(SRC_MOD) 
+SRC_QSTR += $(APP_MODS_SRC_C) $(APP_UTIL_SRC_C) $(APP_STM_SRC_C) $(APP_LIB_SRC_C) $(SRC_MOD)
 ifeq ($(BOARD), $(filter $(BOARD), LOPY LOPY4 FIPY))
 SRC_QSTR += $(APP_MODS_LORA_SRC_C)
 endif

@@ -40,6 +40,8 @@
 
 #include "driver/timer.h"
 
+TaskHandle_t mp_main_task_handle;
+
 typedef void (*HAL_tick_user_cb_t)(void);
 #if defined (LOPY) || defined(LOPY4) || defined(FIPY)
 DRAM_ATTR static HAL_tick_user_cb_t HAL_tick_user_cb;
@@ -235,5 +237,14 @@ void mp_hal_reset_safe_and_boot(bool reset) {
     }
     if (reset) {
         machine_reset();
+    }
+}
+
+// Wake up the main task if it is sleeping
+void mp_hal_wake_main_task_from_isr(void) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken == pdTRUE) {
+        portYIELD_FROM_ISR();
     }
 }

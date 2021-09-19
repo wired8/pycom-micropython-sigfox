@@ -9,7 +9,7 @@
 
 # select the board to build for: if not given on the command line
 # default to WIPY
-BOARD ?= WIPY
+BOARD ?= FIPY
 ifeq ($(wildcard boards/$(BOARD)/.),)
     $(error Invalid BOARD specified)
 endif
@@ -37,14 +37,14 @@ MICROPY_PY_LVGL ?= 1
 
 # LORA is enabled by default for supported boards
 ifeq ($(BOARD), $(filter $(BOARD), LOPY LOPY4 FIPY))
-MOD_LORA_ENABLED ?= 1
+MOD_LORA_ENABLED ?= 0
 else
 MOD_LORA_ENABLED ?= 0
 endif
 
 # SIGFOX is enabled by default for supported boards
 ifeq ($(BOARD), $(filter $(BOARD), SIPY LOPY4 FIPY))
-MOD_SIGFOX_ENABLED ?= 1
+MOD_SIGFOX_ENABLED ?= 0
 else
 MOD_SIGFOX_ENABLED ?= 0
 endif
@@ -87,8 +87,6 @@ COPY_IDF_LIB ?= 0
 
 LTE_LOG_BUFF ?= 0
 RGB_LED ?= enable
-
-MICROPY_PY_LVGL = 1
 
 # by default openthread over LoRa is enabled
 OPENTHREAD = off

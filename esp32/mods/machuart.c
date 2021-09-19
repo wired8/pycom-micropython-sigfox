@@ -583,6 +583,15 @@ STATIC mp_obj_t mach_uart_sendbreak(mp_uint_t n_args, const mp_obj_t *pos_args, 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mach_uart_sendbreak_obj, 1, mach_uart_sendbreak);
 
+STATIC mp_obj_t machine_uart_clear_rx(mp_obj_t self_in) {
+    mach_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    uart_flush_input(self->uart_id);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_clear_rx_obj, machine_uart_clear_rx);
+
 STATIC const mp_map_elem_t mach_uart_locals_dict_table[] = {
     // instance methods
     { MP_OBJ_NEW_QSTR(MP_QSTR_init),            (mp_obj_t)&mach_uart_init_obj },
@@ -590,6 +599,8 @@ STATIC const mp_map_elem_t mach_uart_locals_dict_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_any),             (mp_obj_t)&mach_uart_any_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_wait_tx_done),    (mp_obj_t)&mach_uart_wait_tx_done_obj },
     { MP_OBJ_NEW_QSTR(MP_QSTR_sendbreak),       (mp_obj_t)&mach_uart_sendbreak_obj },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clear_rx),           (mp_obj_t)&machine_uart_clear_rx_obj },
 //    { MP_OBJ_NEW_QSTR(MP_QSTR_irq),         (mp_obj_t)&pyb_uart_irq_obj },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_read),            (mp_obj_t)&mp_stream_read_obj },

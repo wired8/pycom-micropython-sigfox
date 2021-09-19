@@ -40,6 +40,7 @@
 #define __INCLUDED_MPCONFIGPORT_H
 
 #include <stdint.h>
+#include <alloca.h>
 #include "mp_pycom_err.h"
 
 // options to control how Micro Python is built
@@ -98,6 +99,13 @@
 #define MICROPY_PY_URE                              (1)
 #define MICROPY_PY_USELECT                          (1)
 #define MICROPY_PY_MACHINE                          (1)
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW             mp_pin_make_new
+#define MICROPY_PY_MACHINE_PULSE            (1)
+
+#define MICROPY_HW_ENABLE_SDCARD            (1)
+#define MICROPY_HW_SOFTSPI_MIN_DELAY        (0)
+#define MICROPY_HW_SOFTSPI_MAX_BAUDRATE     (ets_get_cpu_frequency() * 1000000 / 200) // roughly
+
 #define MICROPY_PY_MICROPYTHON_MEM_INFO             (1)
 #define MICROPY_PY_UTIMEQ                           (1)
 #define MICROPY_CPYTHON_COMPAT                      (1)
@@ -131,8 +139,6 @@
 #define MICROPY_KBD_EXCEPTION                       (1)
 #define MICROPY_ENABLE_SCHEDULER                    (1)
 #define MICROPY_SCHEDULER_DEPTH                     (8)
-
-
 
 #ifndef BOOTLOADER_BUILD
 #include "freertos/FreeRTOS.h"
@@ -205,8 +211,7 @@ extern const struct _mp_obj_module_t mp_module_i2stools;
 extern const struct _mp_obj_module_t mp_module_lvgl;
 extern const struct _mp_obj_module_t mp_module_lvesp32;
 extern const struct _mp_obj_module_t mp_module_ILI9341;
-extern const struct _mp_obj_module_t mp_module_xpt2046;
-extern const struct _mp_obj_module_t mp_module_rtch;
+extern const struct _mp_obj_module_t mp_module_espidf;
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_umachine),        (mp_obj_t)&machine_module },      \
@@ -224,9 +229,12 @@ extern const struct _mp_obj_module_t mp_module_rtch;
     { MP_OBJ_NEW_QSTR(MP_QSTR_uqueue),          (mp_obj_t)&mp_module_uqueue },    \
     { MP_OBJ_NEW_QSTR(MP_QSTR_dba),             (mp_obj_t)&mp_module_dba },       \
     { MP_OBJ_NEW_QSTR(MP_QSTR_i2stools),        (mp_obj_t)&mp_module_i2stools },  \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl),            (mp_obj_t)&mp_module_lvgl }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32),         (mp_obj_t)&mp_module_lvesp32 }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341),         (mp_obj_t)&mp_module_ILI9341 }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvgl),            (mp_obj_t)&mp_module_lvgl },      \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_lvesp32),         (mp_obj_t)&mp_module_lvesp32 },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_ILI9341),         (mp_obj_t)&mp_module_ILI9341 },   \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_espidf),          (mp_obj_t)&mp_module_espidf }, \
+
+
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine),         (mp_obj_t)&machine_module },      \
@@ -256,14 +264,6 @@ extern const struct _mp_obj_module_t mp_module_rtch;
 #define LV_ROOTS
 #endif
 
-#if MICROPY_BLUETOOTH_NIMBLE
-struct mp_bluetooth_nimble_root_pointers_t;
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
-#else
-#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
-#endif
-
-
 #define MICROPY_PORT_ROOT_POINTERS \
     mp_obj_t machine_config_main;                               \
 	mp_obj_t uart_buf[3];                                       \
@@ -282,8 +282,7 @@ struct mp_bluetooth_nimble_root_pointers_t;
     void *mp_lv_user_data; \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
-    struct _machine_timer_obj_t *machine_timer_obj_head;
-    MICROPY_BLUETOOTH_NIMBLE
+    struct _machine_timer_obj_t *machine_timer_obj_head; \
 
 #include "xtensa/xtruntime.h"                       // for the critical section routines
 
