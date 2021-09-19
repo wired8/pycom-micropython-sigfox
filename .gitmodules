@@ -21,5 +21,3 @@
 [submodule "lib/lv_binding_micropython"]
 	path = lib/lv_binding_micropython
 	url = https://github.com/wired8/lv_binding_micropython.git
-[submodule "Submod"]
-	url = git@github.com:wired8/lv_binding_micropython.git
