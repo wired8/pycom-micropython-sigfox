@@ -20,6 +20,6 @@
 	url = https://github.com/NordicSemiconductor/nrfx.git
 [submodule "lib/lv_binding_micropython"]
 	path = lib/lv_binding_micropython
-	url = https://github.com/miketeachman/lv_binding_micropython.git
+	url = https://github.com/wired8/lv_binding_micropython.git
 [submodule "Submod"]
 	url = git@github.com:wired8/lv_binding_micropython.git
